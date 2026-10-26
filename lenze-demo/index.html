@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LENZE">
+<title>LENZE — Talk</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:#f4f7ff;font:17px -apple-system,BlinkMacSystemFont,system-ui}
+main{max-width:720px;margin:auto;padding:24px 18px}
+h1{letter-spacing:.16em;font-size:34px;margin-bottom:4px}
+p,small{color:#b8c6d9;line-height:1.5}
+#chat{height:43vh;min-height:230px;overflow:auto;border:1px solid #40516a;border-radius:16px;padding:14px;margin:18px 0;background:#162236}
+article{padding:12px 0;border-bottom:1px solid #34445a;white-space:pre-wrap;overflow-wrap:anywhere}
+.you{color:#9bd9ff}.lenze{color:#d1ffcb}
+textarea{width:100%;min-height:100px;border:1px solid #536781;border-radius:12px;background:#1c2b42;color:white;padding:14px;font:inherit}
+button{border:0;border-radius:12px;padding:13px 16px;background:#9ddaff;color:#102037;font:600 16px system-ui;margin:8px 5px 5px 0}
+button:focus-visible{outline:3px solid white}
+#status{color:#ffdc98}
+footer{margin-top:20px;font-size:13px;color:#a9b9cc}
+</style>
+</head>
+<body>
+<main>
+<h1>LENZE</h1>
+<p>The World I see through the lens I was given.</p>
+<p id="status" role="status">Public demonstration — not connected to an AI model.</p>
+<div id="chat" role="log" aria-live="polite"></div>
+<label for="message">Talk or type to LENZE</label>
+<textarea id="message" placeholder="Say hello to LENZE"></textarea>
+<div>
+<button id="mic">🎙 Speak</button>
+<button id="send">Send</button>
+<button id="stop">Stop voice</button>
+</div>
+<footer>This public preview has limited offline text responses. It does not store your messages on a server, access your private archive, or use your cloned voice. Speech recognition may require internet access. Full AI conversation and secure private access are not yet active.</footer>
+</main>
+<script>
+const msg=document.getElementById('message');
+const chat=document.getElementById('chat');
+const status=document.getElementById('status');
+function add(who,text){
+const a=document.createElement('article');
+a.className=who==='You'?'you':'lenze';
+a.textContent=who+': '+text;
+chat.append(a);
+chat.scrollTop=chat.scrollHeight;
+}
+function answer(s){
+const t=s.toLowerCase();
+if(/hello|hi|good morning/.test(t))return 'Hello. I am LENZE, an early demonstration. Your judgment remains your own.';
+if(/who are you|what is lenze/.test(t))return 'LENZE is being built to preserve approved knowledge, encourage independent thought, and respect privacy.';
+if(/thank/.test(t))return 'You are welcome.';
+return 'I heard your message. This public preview cannot answer complex questions yet. A secure AI connection is still being developed.';
+}
+function speak(s){
+if(!('speechSynthesis' in window))return;
+speechSynthesis.cancel();
+speechSynthesis.speak(new SpeechSynthesisUtterance(s));
+}
+document.getElementById('send').onclick=()=>{
+const s=msg.value.trim();
+if(!s)return;
+add('You',s);msg.value='';
+const r=answer(s);add('LENZE',r);speak(r);
+};
+document.getElementById('stop').onclick=()=>window.speechSynthesis?.cancel();
+document.getElementById('mic').onclick=()=>{
+const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!R){status.textContent='Microphone speech recognition is not supported here. Please type.';return;}
+const rec=new R();
+rec.lang=navigator.language||'en-US';
+rec.onresult=e=>{msg.value=e.results[0][0].transcript;status.textContent='Voice captured. Tap Send.';};
+rec.onerror=e=>status.textContent='Microphone unavailable: '+e.error;
+rec.start();
+status.textContent='Listening…';
+};
+</script>
+</body>
+</html>
